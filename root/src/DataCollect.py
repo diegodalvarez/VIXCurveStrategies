@@ -21,6 +21,9 @@ class VIXCurveDataCollector:
         if os.path.exists(self.raw_path)  == False: os.makedirs(self.raw_path)
         
         self.bbg_fut_path = r"/Users/diegoalvarez/Desktop/BBGFuturesManager/data"
+        if os.path.exists(self.bbg_fut_path) == False: 
+            self.bbg_fut_path = r"C:\Users\Diego\Desktop\app_prod\BBGFuturesManager\data"
+        
         self.max_contract = 5
         
     def get_vix_curve(self, verbose: bool = False) -> pd.DataFrame: 
