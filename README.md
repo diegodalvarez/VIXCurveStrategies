@@ -7,7 +7,8 @@ VIX Futures Curve Strategy
 
 ## Todo
 1. Generate ERC Volatility Spread
-2. Make Master Strat
-3. Need to make switching variance of VIX diff markov process
-4. Need to make markov process with external endogenous factor of VVIX
-5. Probability Smoothing for transaction turnover
+2. Portfolio Optimization of VVIX and Markovian Strategies (ERC, rolling sharpe max)
+3. Make Master Strat
+4. Need to make switching variance of VIX diff markov process
+5. Need to make markov process with external endogenous factor of VVIX
+6. Probability Smoothing for transaction turnover
