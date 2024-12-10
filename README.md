@@ -9,3 +9,4 @@ VIX Futures Curve Strategy
 1. Generate Equal Volatility Spread
 2. Need to make switching variance of VIX diff markov process
 3. Need to make markov process with external endogenous factor of VVIX
+4. Probability Smoothing for transaction turnover
