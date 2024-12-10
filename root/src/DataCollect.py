@@ -23,8 +23,20 @@ class VIXCurveDataCollector:
         self.bbg_fut_path = r"/Users/diegoalvarez/Desktop/BBGFuturesManager/data"
         if os.path.exists(self.bbg_fut_path) == False: 
             self.bbg_fut_path = r"C:\Users\Diego\Desktop\app_prod\BBGFuturesManager\data"
+            
+        self.bbg_path = r"C:\Users\Diego\Desktop\app_prod\BBGData\data"
         
         self.max_contract = 5
+        self.misc_tickers = ["VIX", "VVIX"]
+        
+    def _get_diff(self, df: pd.DataFrame) -> pd.DataFrame: 
+        
+        df_out = (df.sort_values(
+            "date").
+            assign(px_diff = lambda x: x.PX_LAST.diff()).
+            dropna())
+        
+        return df_out
         
     def get_vix_curve(self, verbose: bool = False) -> pd.DataFrame: 
         
@@ -48,14 +60,51 @@ class VIXCurveDataCollector:
                 path = paths, engine = "pyarrow").
                 assign(
                     security = lambda x: x.security.str.split(" ").str[0],
-                    date     = lambda x: pd.to_datetime(x.date).dt.date))
+                    date     = lambda x: pd.to_datetime(x.date).dt.date).
+                groupby("security").
+                apply(self._get_diff).
+                reset_index(drop = True))
+    
+            if verbose == True: print("Saving data\n")
+            df_out.to_parquet(path = file_path, engine = "pyarrow")
+        
+        return df_out
+    
+    def get_misc_data(self, verbose: bool = False) -> pd.DataFrame: 
+        
+        file_path = os.path.join(self.raw_path, "MiscData.parquet")
+        try:
+            
+            if verbose == True: print("Trying to find Misc Data")
+            df_out = pd.read_parquet(path = file_path, engine = "pyarrow")
+            if verbose == True: print("Found Data\n")
+            
+        except: 
+            
+            if verbose == True: print("Couldn't find MISC data, collecting it now")
+            paths = [
+                os.path.join(self.bbg_path, ticker + ".parquet")
+                for ticker in self.misc_tickers]
+            
+            df_out = (pd.read_parquet(
+                path = paths, engine = "pyarrow").
+                assign(
+                    date     = lambda x: pd.to_datetime(x.date).dt.date,
+                    security = lambda x: x.security.str.split(" ").str[0]).
+                drop(columns = ["variable"]).
+                rename(columns = {"value": "PX_LAST"}).
+                groupby("security").
+                apply(self._get_diff).
+                reset_index(drop = True))
             
             if verbose == True: print("Saving data\n")
-        
+            df_out.to_parquet(path = file_path, engine = "pyarrow")
+            
         return df_out
     
 def main() -> None:
     
      VIXCurveDataCollector().get_vix_curve(verbose = True)
+     VIXCurveDataCollector().get_misc_data(verbose = True)
      
 if __name__ == "__main__": main()
