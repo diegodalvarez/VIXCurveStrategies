@@ -25,6 +25,9 @@ class VIXCurveDataCollector:
             self.bbg_fut_path = r"C:\Users\Diego\Desktop\app_prod\BBGFuturesManager\data"
             
         self.bbg_path = r"C:\Users\Diego\Desktop\app_prod\BBGData\data"
+        if os.path.exists(self.bbg_path) == False: 
+            self.bbg_path = r"/Users/diegoalvarez/Desktop/BBGData/data"
+        
         
         self.max_contract = 5
         self.misc_tickers = ["VIX", "VVIX"]

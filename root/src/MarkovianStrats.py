@@ -93,6 +93,42 @@ class MarkovianStrats(VIXCurveSpread):
             
         return df_out
     
+    def generate_lagged_vvix_markovian_prob(self, verbose: bool = False) -> pd.DataFrame: 
+        
+        file_path = os.path.join(self.strat_path, "LaggedVVIXMarkovProbability.parquet")
+        try:
+            
+            if verbose == True: print("Trying to find Lagged VVIX Markov Regression")
+            df_out = pd.read_parquet(path = file_path, engine = "pyarrow")
+            if verbose == True: print("Found data\n")
+            
+        except:
+            
+            if verbose == True: print("Couldn't find any info, generating lagged markov data")
+            df = (self.get_misc_data().drop(
+                columns = ["px_diff"]).
+                pivot(index = "date", columns = "security", values = "PX_LAST").
+                dropna())
+            
+            df_out = (MarkovRegression(
+                endog     = df.VIX[1:],
+                k_regimes = 2,
+                exog      = df[:-1]).
+                fit().
+                smoothed_marginal_probabilities.
+                shift().
+                reset_index().
+                melt(id_vars = "date").
+                assign(regime = lambda x: "regime" + (x.variable + 1).astype(str)).
+                drop(columns = ["variable"]).
+                dropna().
+                rename(columns = {"value": "prob"}))
+            
+            if verbose == True: print("Saving data\n")
+            df_out.to_parquet(path = file_path, engine = "pyarrow")
+        
+        return df_out
+    
     def generate_signal_rtn(self, verbose: bool = False) -> pd.DataFrame: 
         
         file_path = os.path.join(self.strat_path, "MarkovReturns.parquet")
@@ -127,11 +163,12 @@ class MarkovianStrats(VIXCurveSpread):
             df_out.to_parquet(path = file_path, engine = "pyarrow")
             
         return df_out
-        
+
 def main() -> None:
     
     df = MarkovianStrats().generate_generic_markovian_prob(verbose = True)
     df = MarkovianStrats().generate_lagged_markovian_prob(verbose = True)
     df = MarkovianStrats().generate_signal_rtn(verbose = True)
+    df = MarkovianStrats().generate_lagged_vvix_markovian_prob(verbose = True)
     
 if __name__ == "__main__": main()
