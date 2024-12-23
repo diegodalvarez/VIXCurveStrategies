@@ -16,8 +16,10 @@ Volatility-targeting doesn't generate significant outperformance. Which prompts 
 2. Strats -> VVIX Zscore (trading zscore of VVIX), markov strategies (using markov regime setup)
 
 ## Todo
-2. Portfolio Optimization of VVIX and Markovian Strategies (ERC, rolling sharpe max)
-3. Make Master Strat
-4. Need to make switching variance of VIX diff markov process
-5. Need to make markov process with external endogenous factor of VVIX
-6. Probability Smoothing for transaction turnover
+1. VVIX Markov Regression notebook
+2. In-Sample Out-of-Sample Regression
+3. Portfolio Optimization of VVIX and Markovian Strategies (ERC, rolling sharpe max)
+4. Make Master Strat
+5. Need to make switching variance of VIX diff markov process
+6. Need to make markov process with external endogenous factor of VVIX
+7. Probability Smoothing for transaction turnover
