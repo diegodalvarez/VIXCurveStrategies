@@ -163,12 +163,40 @@ class MarkovianStrats(VIXCurveSpread):
             df_out.to_parquet(path = file_path, engine = "pyarrow")
             
         return df_out
+    
+    def generate_vvix_signal_rtn(self, verbose: bool = False) -> pd.DataFrame: 
+        
+        file_path = os.path.join(self.strat_path, "VVIXMarkovReturns.parquet")
+        try:
+            
+            if verbose == True: print("Trying to find VVIXX Markov Regression Returns")
+            df_out = pd.read_parquet(path = file_path, engine = "pyarrow")
+            if verbose == True: print("Found data\n")
+            
+        except: 
+            
+            if verbose == True: print("Couldn't find Markov Returns data")
+        
+            df_out = (self.generate_lagged_vvix_markovian_prob().query(
+                "regime == regime.min()").
+                drop(columns = ["regime"]).
+                assign(markov = "GenericVVIX").
+                assign(position = lambda x: np.where(x.prob > 0.5, -1, 1)).
+                merge(right = self.generate_equal_spread(), how = "inner", on = ["date"]).
+                assign(signal_spread = lambda x: np.sign(x.position) * x.spread))
+            
+            if verbose == True: print("Saving data\n")
+            df_out.to_parquet(path = file_path, engine = "pyarrow")
+        
+        return df_out
 
 def main() -> None:
     
     df = MarkovianStrats().generate_generic_markovian_prob(verbose = True)
     df = MarkovianStrats().generate_lagged_markovian_prob(verbose = True)
     df = MarkovianStrats().generate_signal_rtn(verbose = True)
+    
     df = MarkovianStrats().generate_lagged_vvix_markovian_prob(verbose = True)
+    df = MarkovianStrats().generate_vvix_signal_rtn(verbose = True)
     
 if __name__ == "__main__": main()
